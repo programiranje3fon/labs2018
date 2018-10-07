@@ -9,9 +9,6 @@
 
 import operator
 
-# VD: generalno, ove primere bi bilo lepo pokazati im i u debugger-u, narocito funkciju members_list().
-
-
 def word_frequencies(text):
     words_dict = dict()
     words = text.split()
@@ -37,10 +34,9 @@ def word_frequencies(text):
 # 5. Maximum length: 12
 # Passwords that match the criteria should be printed in one row separated by a comma.
 
-import string               # VD: import na nivou modula obicno ide na vrh; ali, jasno mi je da ovde zelis da ga VIDE
+import string
 
-
-def password_check(passwords):                              # VD: izvanredan primer - bravo!
+def password_check(passwords):
     valid_ones = []
     passwords = passwords.split(',')
     passwords = [pword.strip() for pword in passwords]
@@ -168,7 +164,7 @@ def team_stats(members):
         print(f"Young player with the highest score: {max_name}")
 
 
-# Write a function that creates and prints a dictionary from the two given lists        # VD: dodao sam 'and prints'
+# Write a function that creates and prints a dictionary from the two given lists
 # (assume the lists to be of equal length).
 # Example: a list of countries and a list of the countries' national dishes
 # should be turned into a dictionary where keys are country names and values
