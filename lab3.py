@@ -9,6 +9,9 @@
 
 import operator
 
+# VD: generalno, ove primere bi bilo lepo pokazati im i u debugger-u, narocito funkciju members_list().
+
+
 def word_frequencies(text):
     words_dict = dict()
     words = text.split()
@@ -24,7 +27,6 @@ def word_frequencies(text):
         print(word, ":", str(freq))
 
 
-
 # Write a function that accepts a sequence of comma separated passwords
 # and checks their validity using the following criteria:
 # 1. At least 1 letter between [a-z]
@@ -35,9 +37,10 @@ def word_frequencies(text):
 # 5. Maximum length: 12
 # Passwords that match the criteria should be printed in one row separated by a comma.
 
-import string
+import string               # VD: import na nivou modula obicno ide na vrh; ali, jasno mi je da ovde zelis da ga VIDE
 
-def password_check(passwords):
+
+def password_check(passwords):                              # VD: izvanredan primer - bravo!
     valid_ones = []
     passwords = passwords.split(',')
     passwords = [pword.strip() for pword in passwords]
@@ -66,10 +69,9 @@ def password_check(passwords):
     print(", ".join(valid_ones))
 
 
-
 # Write a function that prompts the user for name, age, and height of a couple of people
 # (e.g. members of a sports team) and stores the input values as a list of tuples of
-# the form (name, age, height), where name is string, while age and height are numbers.
+# the form (name, age, height), where name is string, whereas age and height are numbers.
 # The function then sorts and prints the list based on name, then age and finally score
 # (so, the following sorting criteria should be applied: 1) name, 2) age, 3) score).
 
@@ -89,7 +91,6 @@ def sorted_tuples():
     members = sorted(members, key=operator.itemgetter(0,1,2))
     for m in members:
         print(m)
-
 
 
 # Write a function that prompts the user for name, age, height (in meters), weight (in kg), and
@@ -132,7 +133,6 @@ def members_list():
     return members
 
 
-
 # Write a function that takes as its input the list of dictionaries created by the previous function
 # and computes and prints the following statistics:
 # - the average (mean) age, height and weight of the team members.
@@ -168,9 +168,8 @@ def team_stats(members):
         print(f"Young player with the highest score: {max_name}")
 
 
-
-# Write a function that creates a dictionary from the two given lists
-# (assume lists to be of equal length).
+# Write a function that creates and prints a dictionary from the two given lists        # VD: dodao sam 'and prints'
+# (assume the lists to be of equal length).
 # Example: a list of countries and a list of the countries' national dishes
 # should be turned into a dictionary where keys are country names and values
 # are the corresponding dishes.
@@ -181,8 +180,7 @@ def lists_to_dict(l1, l2):
     for cl, num in zipped:
         d[cl] = num
     for cl in sorted(d.keys()):
-        print( cl, ":", d[cl])
-
+        print(cl, ":", d[cl])
 
 
 # Write a function to count the total number of students per class. The function receives
@@ -202,7 +200,6 @@ def stud_per_class(class_data):
         class_dict[cl] += num
     for cl, num in sorted(class_dict.items(), key=itemgetter(1), reverse=True):
         print(cl, ":", num)
-
 
 
 if __name__ == '__main__':
