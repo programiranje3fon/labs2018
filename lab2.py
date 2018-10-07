@@ -2,13 +2,11 @@
 # that are common between the lists (without duplicates). Make sure the function works on
 # two lists of different sizes.
 
-
 def common_elements_with_sets(l1, l2):
     s1 = set(l1)
     s2 = set(l2)
     s = s1.intersection(s2)
     return s
-
 
 def common_elements_lists_only(l1, l2):
     common = [item for item in l1 if item in l2]
@@ -19,27 +17,19 @@ def common_elements_lists_only(l1, l2):
     return unique
 
 
+
 # Write a function that asks the user for a string and prints out
 # whether this string is a palindrome or not.
 
 def palindrom():
     a_string = input("Please enter a string:\n")
-    #JJ: the next (probably too complicated line) can be substituted with:
-    # chars = list(a_string)
-    # if we assume that the input string does not contain spaces
     chars = [ch for ch in list(a_string) if ch != " "]
     chars_reversed = list(reversed(chars))
-    #JJ: note that chars.reverse() could not be used as it reverses
-    # the list in-place, that is, modifies the original list (chars)
     if chars == chars_reversed:
-        print("This string is a palindrom")
+       print("This string is a palindrom")
     else:
-        print("This string is NOT a palindrom")
-    # VD: alternatively:
-    # if ''.join(chars_reversed) == a_string:
-    #     print("This string is a palindrom")
-    # else:
-    #     print("This string is NOT a palindrom")
+       print("This string is NOT a palindrom")
+
 
 
 # Write a function to check whether a given string is a pangram or not.
@@ -59,6 +49,7 @@ def pangram(a_string):
         print("This string is NOT pangram")
 
 
+
 # Write a function that finds numbers between 100 and 400 (both included)
 # where each digit of a number is an even number. The numbers obtained
 # should be printed in a comma-separated sequence.
@@ -75,6 +66,7 @@ def all_even():
         if only_even:
             even.append(num)
     print(", ".join([str(e) for e in even]))
+
 
 
 # Write a function that accepts a string input and returns slices
@@ -97,6 +89,8 @@ def slices(a_string):
         for i in range(pos+1, str_len):
             result.append(a_string[pos:i+1])
     return result
+
+
 
 
 if __name__ == '__main__':
