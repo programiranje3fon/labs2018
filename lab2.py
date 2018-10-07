@@ -36,7 +36,7 @@ def palindrom():
     else:
         print("This string is NOT a palindrom")
     # VD: alternatively:
-    # if ''.join(chars_reversed) == a_string:
+    # if ''.join(chars_reversed) == ''.join(chars):
     #     print("This string is a palindrom")
     # else:
     #     print("This string is NOT a palindrom")
@@ -106,11 +106,11 @@ if __name__ == '__main__':
     # print(common_elements_with_sets(a, b))
     # print(common_elements_lists_only(a, b))
 
-    # palindrom()
+    palindrom()
 
     # pangram("The quick brown fox jumps over the lazy dog")
     # pangram("The quick brown fox jumps over the lazy cat")
 
     # all_even()
 
-    print(slices("table"))
+    # print(slices("table"))
