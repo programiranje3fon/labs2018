@@ -3,11 +3,16 @@
 
 def odd_or_even():
     num = input("Please enter an integer value:\n")
-    if int(num) % 2 == 0:
-        print("You've entered an EVEN number")
-    else:
-        print("You've entered an ODD number")
 
+    # Option 1:
+    # if int(num) % 2 == 0:
+    #     print("You've entered an EVEN number")
+    # else:
+    #     print("You've entered an ODD number")
+
+    # Option 2:
+    result = 'even' if int(num) % 2 == 0 else 'odd'
+    print('This is an', result.upper(), 'number')
 
 
 # Write a function to calculate the factorial of a number.
@@ -42,37 +47,50 @@ def nth_lowest(an_iterable, n):
 # - the product of all negative elements in the list
 
 def list_stats(a_list):
-    smallest = abs(a_list[0])
-    largest = abs(a_list[0])
     sum_pos = 0
     prod_neg = 1
+    smallest = largest = abs(a_list[0])
     for num in a_list:
-        if abs(num) < smallest: smallest = abs(num)
-        elif abs(num) > largest: largest = abs(num)
-        if num > 0: sum_pos += num
-        elif num < 0: prod_neg *= num
+        if abs(num) < smallest:
+            smallest = abs(num)
+        elif abs(num) > largest:
+            largest = abs(num)
+        if num > 0:
+            sum_pos += num
+        elif num < 0:
+            prod_neg *= num
     return smallest, largest, sum_pos, prod_neg
 
 
 
-# Write a function that receives a list of numbers and a number.
-# The function:
+# Write a function that receives a list of numbers and a
+# threshold value (number). The function:
 # - makes a new list that has unique elements from the input list
 #   that are less than the given number
 # - prints the number of elements in the new list
 # - sorts the elements in the list and prints them, an element per line
 
-def print_new_list(numbers, threshold):
-    selection = set()
-    for num in numbers:
-        if num < threshold:
-            selection.add(num)
-    print("Number of elements in the new list:", str(len(selection)))
-    selection = list(selection)
-    selection.sort(reverse=True)
-    for num in list(selection):
-        print(num)
+# Option 1:
+# def print_new_list(numbers, threshold):
+#     selection = set()
+#     for num in numbers:
+#         if num < threshold:
+#             selection.add(num)
+#     print("Number of elements in the new list:", str(len(selection)))
+#     selection = list(selection)
+#     selection.sort(reverse=True)
+#     for num in selection:
+#         print(num)
 
+# Option 2:
+def print_new_list(a_list, threshold):
+    new_list = []
+    for item in set(a_list):
+        if item < threshold:
+            new_list.append(item)
+    print(f'The new list has {len(new_list)} elements.')
+    for item in sorted(new_list, reverse=True):
+        print(item)
 
 
 # Write a function that receives two strings and checks if they
@@ -81,12 +99,16 @@ def print_new_list(numbers, threshold):
 
 def anagrams(str1, str2):
     str2_rev = list(reversed(str2.lower()))
-    return list(str1.lower()) == str2_rev
+
+    # Option 1:
+    # return list(str1.lower()) == str2_rev
+
+    # Option 2:
+    return ''.join(str1.lower()) == ''.join(str2_rev)
 
 
-
-# Write a function that generates and prints a dictionary that contains
-# a number (between 1 and n) in the form (x, x*x)
+# Write a function that generates and prints a dictionary with entries
+# in the form x:x*x, where x is a number between 1 and n
 
 def create_dictionary(n):
     num_dict = dict()
@@ -97,9 +119,9 @@ def create_dictionary(n):
 
 
 
-# Write a function that accepts a string and calculates the number
-# of digits and letters. The function returns a dictionary with
-# the computed values.
+# Write a function that receives a string as its input parameter and 
+# calculates the number of digits and letters in this string. 
+# The function returns a dictionary with the computed values.
 
 def digits_letters_counter(a_string):
     str_stats = {'letters':0, 'digits':0}
@@ -124,7 +146,7 @@ import random
 def guess_number():
     num = random.randint(1,9)
     while True:
-        val = input("Quess the number (1-9) or enter q to exit the game:\n")
+        val = input("Guess the number (1-9) or enter q to exit the game:\n")
         if val.lower() == 'q':
             print("Better luck next time!")
             return
@@ -142,18 +164,20 @@ if __name__ == '__main__':
 
     # print(factorial(7))
 
-    # a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-    # print(nth_lowest(a, 16))
+    # a = [31, 72, 13, 41, 5, 16, 87, 98, 9]
+    # print(nth_lowest(a, 3))
     # print(nth_lowest(['f', 'r', 't', 'a', 'b', 'y', 'j', 'd', 'c'], 6))
+    # print(nth_lowest('today', 6))
 
     # print(list_stats([1.2, 3.4, 5.6, -4.2, -5.6, 9, 11.3, -23.45, 81]))
 
     # print_new_list([1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89], 9)
 
     # print(anagrams('Cat', 'Tac'))
+    # print(anagrams('Bob', 'Bill'))
 
     # create_dictionary(5)
 
-    # print(digits_letters_counter('comma-separated_123'))
+    # print(digits_letters_counter('Tuesday, Oct 9, 2018'))
 
     guess_number()
