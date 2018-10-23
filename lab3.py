@@ -25,6 +25,25 @@ from operator import itemgetter
 #         print("{0}:{1}".format(key, val))
 
 # Option 2
+# def token_frequences(text):
+#     tokens = text.split()
+#     token_dict = dict()
+#     for token in tokens:
+#         token = token.lower().strip()
+#         if token in token_dict:
+#             token_dict[token] += 1
+#         else:
+#             token_dict[token] = 1
+#
+#     print("Alphanumeric sorting:")
+#     for key, val in sorted(token_dict.items()):
+#         print("{0}:{1}".format(key, val), end="; ")
+#     print("\nFrequency-based sorting:", end="\n")
+#     for key, val in sorted(token_dict.items(), key=itemgetter(1), reverse=True):
+#         print("{0}:{1}".format(key, val), end="; ")
+
+
+# Option 3
 from collections import defaultdict
 
 def token_frequences(text):
@@ -241,7 +260,7 @@ def total_class_counts(students_per_class):
 
 if __name__ == '__main__':
 
-    # token_frequences("New to Python or choosing between Python 2 and Python 3? Read Python 2 or Python 3.")
+    token_frequences("New to Python or choosing between Python 2 and Python 3? Read Python 2 or Python 3.")
 
     # check_passwords("ABd1234@1, a F1#, 2w3E*, 2We3345")
 
@@ -258,5 +277,5 @@ if __name__ == '__main__':
     # countries = ["Italy", "Germany", "Spain", "USA"]
     # lists_to_dict(countries, dishes)
 
-    l = [('V', 1), ('VI', 1), ('V', 2), ('VI', 2), ('VI', 3), ('VII', 1)]
-    total_class_counts(l)
+    # l = [('V', 1), ('VI', 1), ('V', 2), ('VI', 2), ('VI', 3), ('VII', 1)]
+    # total_class_counts(l)
