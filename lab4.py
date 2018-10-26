@@ -92,14 +92,17 @@ def stopwatch(f):                                       # alt. names: runtime, r
     @functools.wraps(f)
     def stopwatch_wrapper(*args, **kwargs):
         import time                                     # can be imported somewhere on top of the module as well
+
         # Do something before
         print('Running', f.__name__ + '(' + ','.join([str(arg) for arg in args]) + ')...')
         start_time = time.perf_counter()
+
         v = f(*args, **kwargs)
+
         # Do something after
         end_time = time.perf_counter()
-        # print('Running', f.__name__ + '()', 'took', (end_time - start_time), 'sec.')
         print('Time:', '{0:.5f}'.format(end_time - start_time), 'sec.')
+
         return v
 
     return stopwatch_wrapper
@@ -150,47 +153,21 @@ def delay(n):
         @functools.wraps(f)
         def wrapper_wait(*args, **kwargs):
             import time                                 # can be imported somewhere on top of the module as well
+
             # Do something before
+            time.sleep(n)                               # improves output visually
             print('Wait', n, 'sec...')
             time.sleep(n)
-            # time.sleep(n/2)
+
             v = f(*args, **kwargs)
+
             # Do something after
-            # time.sleep(n/2)
-            # print('Done.')
+
             return v
 
         return wrapper_wait
 
     return wait
-
-# def delay(n):
-#
-#     def wait(f):
-#
-#         import functools                                # can be imported somewhere on top of the module as well
-#
-#         @functools.wraps
-#         def wrapper_wait(*args, **kwargs):
-#             v = f(*args, **kwargs)
-#             return v
-#
-#         return wrapper_wait
-#
-#     return wait
-
-# def wait(f):
-#
-#     import functools                                # can be imported somewhere on top of the module as well
-#
-#     @functools.wraps(f)
-#     def wrapper_wait(*args, **kwargs):
-#         print("Before")
-#         v = f(*args, **kwargs)
-#         print("After")
-#         return v
-#
-#     return wrapper_wait
 
 
 @delay(1)
