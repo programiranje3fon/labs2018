@@ -1,28 +1,35 @@
-# Write a function that receives an arbitrary number of numeric values and computes their product.
-# The function also receives a named argument "absolute" with the default value False, which determines
-# if absolute value of the product is to be returned or not.
+import functools
+from statistics import mean, median, stdev
+
+
+# Task 1
+# Write a function that receives an arbitrary number of numeric values
+# and computes their product. The function also receives a named argument
+# "absolute" with the default value False, which determines if absolute
+# value of the product is to be returned or not.
 # Implement the function in two different ways:
 #
 # 1) using a for loop
 # 2) using the reduce() f. from the functools package together with an appropriate lambda f.
 
-from functools import reduce
-
+# Option 1
 # def product(*numbers, absolute = False):
-#     result = 1
+#     prod = 1
 #     for number in numbers:
-#         result *= number
+#         prod *= number
 #     if absolute:
-#         result = abs(result)
-#     return result
+#         prod = abs(prod)
+#     return prod
 
+
+# Option 2
 def product(*numbers, absolute = False):
-    result = reduce(lambda x, y: x * y, numbers)
-    if absolute:
-        result = abs(result)
-    return result
+    prod = functools.reduce(lambda num1, num2: num1*num2, numbers)
+    return prod if not absolute else abs(prod)
 
 
+
+# Task 2
 # Write a function that receives an arbitrary number of strings and returns a list
 # of those strings where the first and the last character are the same and the
 # total number of unique characters is above the given threshold. The threshold
@@ -32,18 +39,22 @@ def product(*numbers, absolute = False):
 # 1) using a for loop
 # 2) using the filter() f. together with an appropriate lambda f.
 
-# def filter_strings(*strings, min_unique = 3):
-#     result = []
+
+# Option 1
+# def string_selection(*strings, threshold = 3):
+#     selection = []
 #     for s in strings:
-#         if (s[0] == s[-1]) and (len(set(s)) > min_unique):
-#             result.append(s)
-#     return result
+#         if (s[0]==s[-1]) and (len(set(s)) > threshold):
+#             selection.append(s)
+#     return selection
 
-def filter_strings(*strings, min_unique = 3):
-    result = filter(lambda s: (s[0] == s[-1]) and (len(set(s)) > min_unique), strings)
-    return list(result)
+# Option 2
+def string_selection(*strings, threshold = 3):
+    return list(filter(lambda s: (s[0]==s[-1]) and (len(set(s)) > threshold), strings))
 
 
+
+# Task 3
 # Write a function that receives a list of product orders, where each order is a 4-tuple
 # of the form (order_id, product_name, quantity, price_per_item). The function returns
 # a list of 2-tuples of the form (order_id, total_price) where total price (in USD) for
@@ -55,24 +66,27 @@ def filter_strings(*strings, min_unique = 3):
 # 1) using a for loop
 # 2) using the map() f. together with an appropriate lambda f.
 
-# def process_orders(orders, shipping=10):
-#     procesed_orders = []
-#     for order in orders:
-#         order_id, product, quantity, price = order
+# Option 1
+# def process_orders(orders):
+#     from collections import defaultdict
+#     orders_dict = defaultdict(int)
+#     for order_id, product_name, quantity, price in orders:
 #         tot_price = quantity * price
-#         if tot_price >= 100:
-#             tot_price += shipping
-#         procesed_orders.append((order_id, tot_price))
-#     return procesed_orders
+#         orders_dict[order_id] += (tot_price if tot_price < 100 else tot_price + 10)
+#     return [(id, tot_price) for id, tot_price in orders_dict.items()]
 
-def process_orders(orders, shipping=10):
-    f = lambda order: (order[0], order[2] * order[3]) if order[2] * order[3] < 100 \
-                        else (order[0], order[2] * order[3] + shipping)
-    return list(map(f, orders))
+# Option 2
+def process_orders(orders):
+    orders_total = map(lambda order: (order[0], order[2] * order[3]), orders)
+    orders_total = map(lambda order: order if order[1] < 100 else (order[0], order[1] + 10), orders_total)
+    return list(orders_total)
 
 
-# Create a decorator that measures the time a function takes to execute and prints the duration to the console.
-# Create also a couple of simple functions to test the decorator and decorate them accordingly.
+
+# Task 4
+# Create a decorator that measures the time a function takes to execute
+# and prints the duration to the console.
+#
 # Hint 1: use the decorator-writing pattern:
 # import functools
 # def decorator(func):
@@ -83,123 +97,94 @@ def process_orders(orders, shipping=10):
 #         # Do something after
 #         return value
 #     return wrapper_decorator
-# Hint 2: to measure the time a function takes, use the time.perf_counter() function from the Python Standard Library.
+#
+# Hint 2: to measure the time a function takes, use the perf_counter() function from the time module.
 
-def stopwatch(f):                                       # alt. names: runtime, running_time, timer, get_time, interval
+def stopwatch(f):
 
-    import functools                                    # can be imported somewhere on top of the module as well
+    import time
 
     @functools.wraps(f)
-    def stopwatch_wrapper(*args, **kwargs):
-        import time                                     # can be imported somewhere on top of the module as well
-        # Do something before
-        print('Running', f.__name__ + '(' + ','.join([str(arg) for arg in args]) + ')...')
+    def stopwatch_wrapper(*args):
+
+        print("Running " + f.__name__ + "(" + ", ".join([str(arg) for arg in args]) + ")")
         start_time = time.perf_counter()
-        v = f(*args, **kwargs)
-        # Do something after
-        end_time = time.perf_counter()
-        # print('Running', f.__name__ + '()', 'took', (end_time - start_time), 'sec.')
-        print('Time:', '{0:.5f}'.format(end_time - start_time), 'sec.')
-        return v
+
+        value = f(*args)
+
+        total_time = time.perf_counter() - start_time
+        print("\nThe function {0} was running for {1:.2f} seconds".format(f.__name__, total_time))
+
+        return value
 
     return stopwatch_wrapper
 
 
-@stopwatch
-def sum_of_squares(n, **kwargs):                        # test function 1
-    for _ in range(n):
-        sum([i * i for i in range(10000)])
+# Write a function that for each number x in the range 1..n computes the sum:
+# s(x) = 1 + 2 + ... + x-1 + x, where n is the input parameter. Decorate the
+# function with the stopwatch_decorator.
 
 @stopwatch
-def sum_of_powers(x, y, n):                             # test function 2
-    if x not in range(1, 4):                            # constrain input parameters for the sake of running time
-        x = 3
-    if y not in range(1, 4):
-        y = 3
-    if n not in range(1, 1000):
-        n = 999
+def compute_sums(n):
+    result = 0
+    for x in range(1, n+1):
+        result += sum(range(1, x+1))
+    return result
+
+
+# Write a function that creates a list by generating n random numbers between
+# 1 and k (n and k are input parameters). After generating and adding each
+# number to the list, the function determines and prints the difference
+# between mean and median of the list elements. Decorate the function with
+# the stopwatch decorator.
+
+@stopwatch
+def random_numbers(n, k):
+    from random import randint, seed
+
+    numbers = []
+    seed(2710)
     for _ in range(n):
-        sum([i**x + i**y for i in range(10000)])
+        number = randint(1,k)
+        numbers.append(number)
+        print("After adding {0}, "
+              "the difference is {1:.4f}".format(number, mean(numbers) - median(numbers)))
 
 
-# Create a decorator that makes a function run with a delay of n sec (n should be the decorator parameter).
-# Create also a couple of simple functions to test the decorator and decorate them accordingly.
-# Hint 1: use the "extended" decorator-writing pattern:
-# def decorator(arg1, arg2, ...):
-#     def real_decorator(func):
-#         import functools
-#         @functools.wraps(func)			            # preserves func's identity after it's decorated
-#         def wrapper_real_decorator(*args, **kwargs):
-#             # Do something before
-#             some_stuff()
-#             some_stuff_with_arguments(arg1, arg2, ...)
-#             value = func(*args, **kwargs)
-#             # Do something after
-#             more_stuff()
-#             return value
-#         return wrapper_real_decorator
-#     return real_decorator
-# Hint 2: use the time.sleep() function from the Python Standard Library to introduce the delay.
 
-def delay(n):
+# Create a decorator that standardizes a list of numbers
+# before passing it to a function for further computations.
+# The decorator also rounds the computation results to 4
+# digits before returning it (as its return value).
 
-    def wait(f):
+def standardise(f):
 
-        import functools                                # can be imported somewhere on top of the module as well
+    @functools.wraps(f)
+    def standardise_wrapper(*args, **kwargs):
+        m = mean(args)
+        std = stdev(args)
+        st_args = [(arg-m)/std for arg in args]
 
-        @functools.wraps(f)
-        def wrapper_wait(*args, **kwargs):
-            import time                                 # can be imported somewhere on top of the module as well
-            # Do something before
-            print('Wait', n, 'sec...')
-            time.sleep(n)
-            # time.sleep(n/2)
-            v = f(*args, **kwargs)
-            # Do something after
-            # time.sleep(n/2)
-            # print('Done.')
-            return v
+        result = f(*st_args, **kwargs)
 
-        return wrapper_wait
+        return round(result, 4)
 
-    return wait
-
-# def delay(n):
-#
-#     def wait(f):
-#
-#         import functools                                # can be imported somewhere on top of the module as well
-#
-#         @functools.wraps
-#         def wrapper_wait(*args, **kwargs):
-#             v = f(*args, **kwargs)
-#             return v
-#
-#         return wrapper_wait
-#
-#     return wait
-
-# def wait(f):
-#
-#     import functools                                # can be imported somewhere on top of the module as well
-#
-#     @functools.wraps(f)
-#     def wrapper_wait(*args, **kwargs):
-#         print("Before")
-#         v = f(*args, **kwargs)
-#         print("After")
-#         return v
-#
-#     return wrapper_wait
+    return standardise_wrapper
 
 
-@delay(1)
-# @wait
-def print_list_elements(l):
-    while l:                                            # l != []
-        print(l[0])
-        del(l[0])
-        print_list_elements(l)
+# Write a function that receives an arbitrary number of int values
+# and for each value (x) computes the following sum:
+# S(x) = x + x**2 + x**3 + ... + x**n
+# where n is the keyword argument with default value 10.
+# The function returns the sum of S(x) of all received int values.
+# Decorate the function with the standardise decorator.
+
+@standardise
+def sum_of_powered_args(*args, n=10):
+    result = 0
+    for arg in args:
+        result += sum([arg**i for i in range(1, n+1)])
+    return result
 
 
 if __name__ == '__main__':
@@ -215,7 +200,7 @@ if __name__ == '__main__':
     # print(product(*num_list)) # the * operator is 'unpacking' the list
 
     # str_list = ['yellowy', 'Bob', 'lovely', 'yesterday', 'too']
-    # print(filter_strings(*str_list))
+    # print(string_selection(*str_list))
 
     # orders = [("34587", "Learning Python, Mark Lutz", 4, 40.95),
     #           ("98762", "Programming Python, Mark Lutz", 5, 56.80),
@@ -224,9 +209,9 @@ if __name__ == '__main__':
     #
     # print(process_orders(orders))
 
-    # sum_of_squares(100)
-    # sum_of_powers(2, 3, 200)
+    # print(compute_sums(10000))
+    # random_numbers(100, 250)
 
-    l = ["Bruce Springsteen", "Patti Smith", "Alejandro Escovedo"]
-    print_list_elements(l)
+    print(sum_of_powered_args(1,3,5,7,9, n=5))
+
 
