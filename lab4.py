@@ -120,9 +120,9 @@ def stopwatch(f):
     return stopwatch_wrapper
 
 
-# Write a function that for each number x in the range 1..n computes the sum:
-# s(x) = 1 + 2 + ... + x-1 + x, where n is the input parameter. Decorate the
-# function with the stopwatch_decorator.
+# Write a function that for each number x in the range 1..n (n is the input parameter)
+# computes the sum: S(x) = 1 + 2 + ... + x-1 + x, and returns the sum of all S(x).
+# Decorate the function with the stopwatch_decorator.
 
 @stopwatch
 def compute_sums(n):
@@ -151,11 +151,14 @@ def random_numbers(n, k):
               "the difference is {1:.4f}".format(number, mean(numbers) - median(numbers)))
 
 
-
+# Task 5
 # Create a decorator that standardizes a list of numbers
 # before passing it to a function for further computations.
 # The decorator also rounds the computation results to 4
 # digits before returning it (as its return value).
+#
+# Bonus: before calling the wrapped function, print, to the console,
+# its name with the list of input parameters (after standardisation)
 
 def standardise(f):
 
@@ -164,6 +167,10 @@ def standardise(f):
         m = mean(args)
         std = stdev(args)
         st_args = [(arg-m)/std for arg in args]
+
+        print("Calling function " + f.__name__ +
+              "(" + ", ".join([str(arg) for arg in st_args]) + ", " +
+              ", ".join([key + "=" + str(val) for key, val in kwargs.items()]) + ")")
 
         result = f(*st_args, **kwargs)
 
