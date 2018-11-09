@@ -60,11 +60,13 @@ class Flight:
     @departure.setter
     def departure(self, departure):
         """Expecting departure date and time in the form: %Y-%m-%d %H:%M"""
+
         try:
             self.__departure = datetime.strptime(departure, self.departure_format)
         except ValueError as error:
-            print(error)
+            # print(error)
             print("Error! Departure expected in the format: " + self.departure_format)
+            self.__departure = "undefined"
 
 
     @property
@@ -88,9 +90,7 @@ class Flight:
         first_two_letters = flight_to_check[0].isalpha() and flight_to_check[1].isalpha()
         if not first_two_letters:
             return False
-        only_digits_left = [False]*(len(flight_to_check) - 2)
-        for i, ch in enumerate(flight_to_check[2:]):
-            only_digits_left[i] = ch.isdigit()
+        only_digits_left = [True if ch.isdigit() else False for ch in flight_to_check[2:]]
         return all(only_digits_left)
 
 
@@ -111,17 +111,28 @@ class Flight:
 
 
     def __str__(self):
-        flight_str = "Flight number: " + self.flight_num + " operated by: " + self.operated_by + \
-                     "\nDeparture date/time: " + datetime.strftime(self.departure, self.departure_format) + \
-                     "\nOrigin: " + self.origin + "\nDestination: " + self.destination
+        flight_str = "Flight number: " + self.flight_num
+        flight_str += " operated by: " + self.operated_by
+        flight_str += "\nDeparture date/time: " + self.format_departure_datetime(self.departure)
+        flight_str += "\nOrigin: " + self.origin
+        flight_str += "\nDestination: " + self.destination
 
         if len(self.passengers) == 0:
             flight_str += "\nNo passengers registered yet"
         else:
-            flight_str += "\nPassengers:\n"
-            flight_str += "\n".join([str(p) for p in self.passengers])
+            flight_str += "\nPassengers:\n\n" + "\n\n".join([str(p) for p in self.passengers])
 
         return flight_str
+
+    @staticmethod
+    def format_departure_datetime(departure):
+        departure_str = "undefined"
+        try:
+            departure_str = datetime.strftime(departure, Flight.departure_format)
+        except TypeError as e:
+            print("Error when formatting the departure date and time: ", end="")
+            print(e, end="\n")
+        return departure_str
 
 
     @classmethod
@@ -145,9 +156,9 @@ class Flight:
 
 if __name__ == '__main__':
 
-    lh1411 = Flight('LH1411', '2018-11-03 6:50', origin='Belgrade', destination='Frankfurt')
-    print(lh1411)
-    print()
+    # lh1411 = Flight('LH1411', '2018-11-03 6:50', origin='Belgrade', destination='Frankfurt')
+    # print(lh1411)
+    # print()
 
     lh992 = Flight.from_Frankfurt_by_Lufthansa('LH992', '2018-11-03 12:20')
     lh992.destination = "Amsterdam"
@@ -157,19 +168,19 @@ if __name__ == '__main__':
     bob = BusinessPassenger("Bob Smith", "123456", air_miles=1000, checked_in=True)
     john = EconomyPassenger("John Smith", "987654", checked_in=False)
     bill = EconomyPassenger("Billy Stone", "917253", air_miles=5000, checked_in=True)
-    dona = EconomyPassenger("Dona Stone", "917253", air_miles=2500, checked_in=True)
+    dona = EconomyPassenger("Dona Stone", "917253", air_miles=2500, checked_in=False)
     kate = EconomyPassenger("Kate Fox", "114252", air_miles=3500, checked_in=True)
 
-    lh1411.passengers.extend([bob, john, bill, dona, kate])
+    lh992.passengers.extend([bob, john, bill, dona, kate])
 
     # print(f"After adding passengers to flight {lh1411.flight_num}:\n")
     # print(lh1411)
 
-    # print("Last call to passengers who have not yet checked in!")
-    # for passenger in lh1411.generate_non_checked_list():
-    #     print(passenger)
+    print("Last call to passengers who have not yet checked in!")
+    for passenger in lh992.generate_non_checked_list():
+        print(passenger)
 
-    print("Passengers offered an upgrade opportunity:")
-    for ind, passenger in enumerate(lh1411.generate_upgrade_candidates(2000)):
-        print(str(ind+1) + ".\n" + str(passenger))
+    # print("Passengers offered an upgrade opportunity:")
+    # for ind, passenger in enumerate(lh1411.generate_upgrade_candidates(2000)):
+    #     print(str(ind+1) + ".\n" + str(passenger))
 

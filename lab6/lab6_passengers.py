@@ -92,6 +92,7 @@ class Passenger:
             self.__passport = passport
         else:
             print("Error! Passport number has to be a string of length 6, consisting of digits only")
+            self.__passport = "unknown"
 
 
     @staticmethod
