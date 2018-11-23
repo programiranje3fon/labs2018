@@ -80,7 +80,7 @@ def get_pageview_counts(name):
     def a_with_latest60(tag):
         return (tag.name == 'a') and tag.has_attr('href') and (tag['href'].find('latest-60') >= 0)
 
-    if page_content is not None:
+    if page_content:
         soup = BeautifulSoup(page_content, 'html.parser')
         a_tag = soup.find(a_with_latest60)
         if a_tag:
