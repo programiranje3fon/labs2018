@@ -1,5 +1,7 @@
 import pickle
 import csv
+import shelve
+from collections import Counter, defaultdict
 
 
 # Task 1
@@ -68,13 +70,26 @@ def read_sort_write(src_file):
 #
 # Note: file cities_and_times.txt downloaded from:
 # https://www.python-course.eu/cities_and_times.txt
+# 
+# Note: for a list of things that can be pickled, see this page:
+# https://docs.python.org/3/library/pickle.html#pickle-picklable
 
 def read_write_city_data(src_file):
+
+    def write_to_csv(fname, city_data):
+        try:
+            with open(fname, "w") as csvf:
+                data_writer = csv.writer(csvf, delimiter=';')
+                data_writer.writerow(('city_name', 'weekday', 'hour', 'minute'))
+                for city, weekday, time in city_data:
+                    data_writer.writerow((city, weekday, time[0], time[1]))
+        except csv.Error as err:
+            print("Error when trying to write the results to a csv file: " + str(err))
+
 
     data_list = []
 
     try:
-
         with open(src_file, 'r') as src:
             for line in src:
                 city, weekday, time = line.rstrip().rsplit(maxsplit=2)
@@ -91,21 +106,22 @@ def read_write_city_data(src_file):
         print("Not able to proceed...Terminating the function")
     except IOError as io_err:
         print("Error while trying to read from file {0}: {1}".format(src_file, io_err))
-    else:
-        try:
-            with open("task2_result.pkl", "w+b") as pklf:
-                pickle.dump(data_list, pklf)
-        except IOError as io_err:
-            print("Error when trying to serialise the results: " + str(io_err))
 
-        try:
-            with open("task2_results.csv", "w") as csvf:
-                data_writer = csv.writer(csvf, delimiter=';')
-                data_writer.writerow(('city_name', 'weekday', 'hour', 'minute'))
-                for city, weekday, time in data_list:
-                    data_writer.writerow((city, weekday, time[0], time[1]))
-        except IOError as io_err:
-            print("Error when trying to write the results to a csv file: " + str(io_err))
+    else:
+        serialise_to_file("task2_results.pkl", data_list)
+        write_to_csv("task2_results.csv", data_list)
+
+
+
+def serialise_to_file(fname, data):
+    try:
+        with open(fname, 'bw') as fw:
+            pickle.dump(data, fw)
+    except IOError as io_err:
+        print("Error when serialising data to file {0}:\n".format(fname, io_err))
+    except pickle.PickleError as pkl_err:
+        print(pkl_err)
+
 
 
 # Task 3
@@ -121,34 +137,34 @@ def read_write_city_data(src_file):
 # Note: file Training_01.txt downloaded from:
 # http://www.practicepython.org/assets/Training_01.txt
 #
-# useful article for the shelve module: https://pymotw.com/3/shelve/
+# Note: for a nice quick introduction to the shelve module, see: https://pymotw.com/3/shelve/
 
 
 def image_categories(src_file):
+
+    cat_file_list = []
 
     def get_file_category_tuple(fpath):
         category, file = fpath.rstrip().rsplit("/", maxsplit=1)
         return category[3:], file
 
     try:
-
         with open(src_file, 'r') as src_file:
             lines = src_file.readlines()
             cat_file_list = [get_file_category_tuple(line) for line in lines]
-
-            compute_and_store_category_counts(cat_file_list)
-
-            create_and_store_img_dict(cat_file_list)
 
     except FileNotFoundError as fnf_err:
         print(fnf_err)
     except IOError as io_err:
         print(io_err)
 
+    else:
+        compute_and_store_category_counts(cat_file_list)
+        create_and_store_img_dict(cat_file_list)
+
 
 def compute_and_store_category_counts(cat_file_tuples):
 
-    from collections import Counter
     categories = [cat for cat, file in cat_file_tuples]
     category_counts = Counter(categories)
 
@@ -158,27 +174,30 @@ def compute_and_store_category_counts(cat_file_tuples):
     # for cat_file in cat_file_list:
     #     category_dict[cat_file[0]] += 1
 
-    with open("task3_results.csv", "w") as csvf:
-        csv_writer = csv.writer(csvf)
-        csv_writer.writerow(('category_name', 'image_count'))
-        for item in category_counts.items():
-            csv_writer.writerow(item)
+    try:
+        with open("task3_results.csv", "w") as csvf:
+            csv_writer = csv.writer(csvf)
+            csv_writer.writerow(('category_name', 'image_count'))
+            for item in category_counts.items():
+                csv_writer.writerow(item)
+    except csv.Error as err:
+        print("Error while writing category counts to csv file:\n{}".format(err))
 
 
 def create_and_store_img_dict(cat_file_tuples):
 
-    from collections import defaultdict
     img_dict = defaultdict(list)
     for category, image in cat_file_tuples:
         img_dict[category].append(image)
 
-    with open("task3_results.pkl", "bw") as pklf:
-        pickle.dump(img_dict, pklf)
+    serialise_to_file("task3_results.pkl", img_dict)
 
-    import shelve
-    with shelve.open("task3_result_shelve") as s:
-        for key, val in img_dict.items():
-            s[key] = val
+    try:
+        with shelve.open("task3_result_shelve") as s:
+            for key, val in img_dict.items():
+                s[key] = val
+    except IOError as io_err:
+        print(io_err)
 
 
 
@@ -202,7 +221,6 @@ def write_common_numbers(fnum1, fnum2):
     def read_numbers_from_file(fname):
         num_list = list()
         try:
-
             with open(fname, 'r') as fobj:
                 lines = [line.rstrip('\n') for line in fobj.readlines()]
                 for line in lines:
@@ -210,7 +228,6 @@ def write_common_numbers(fnum1, fnum2):
                         num_list.append(int(line))
                     except ValueError as val_err:
                         print("Cannot transform {0} to number due to: {1}".format(line, val_err))
-
         except FileNotFoundError as fnf_err:
             print(fnf_err)
 
@@ -220,21 +237,25 @@ def write_common_numbers(fnum1, fnum2):
     num_list_2 = read_numbers_from_file(fnum2)
 
     commons_list = [num for num in num_list_1 if num in num_list_2]
-    # alterntive:
+    # alternative:
     # commons_list = list(set(num_list_1).intersection(set(num_list_2)))
-    
-    try:
-        with open('task4_result.pkl', 'wb') as pklf:
-            pickle.dump(commons_list, pklf)
-    except IOError as io_err:
-        print("Error when serializing the resulting list: " + io_err)
+
+    serialise_to_file("task4_results.pkl", commons_list)
+
 
 
 if __name__ == "__main__":
 
     # read_sort_write("data/file_q5c.txt")
+
     # read_write_city_data("data/cities_and_times.txt")
-    image_categories("data/Training_01.txt")
+
+    # image_categories("data/Training_01.txt")
+
     # t4_f1 = "data/primenumbers.txt"
     # t4_f2 = "data/happynumbers.txt"
     # write_common_numbers(t4_f1, t4_f2)
+
+    with open("task4_results.pkl", "rb") as bf:
+        results = pickle.load(bf)
+        print(results)
