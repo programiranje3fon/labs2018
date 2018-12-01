@@ -7,14 +7,10 @@
 # - serialising (writing) objects of the class Flight into a .json file
 # - deserializing (reconstructing) objects of the class Flight from a
 #   .json file (created using the previous function)
-#
-# Note: function __str__ in the flight class needs to be modified
-# in particular, the formatting of the departure attribute so that
-# we can expect to receive departure as either string or datetime
-# object and be able to format it. To that end, add, to the Flight
-# class a new static method (format_departure(departure_obj))
+
 
 import json
+from sys import stderr
 from datetime import datetime
 from lab6.lab6_flight import Flight
 from lab6.lab6_passengers import BusinessPassenger, EconomyPassenger
@@ -36,7 +32,7 @@ def serialise_to_json(obj):
     obj_dict.update(vars(obj))
 
     if isinstance(obj, Flight):
-        departure_var = '_Flight__departure'
+        departure_var = '_Flight__departure' # this is how private variables are named (_<cls_name>__<var_name>)
         obj_dict[departure_var] = datetime.strftime(obj_dict[departure_var], Flight.departure_format)
 
     return obj_dict
@@ -44,31 +40,22 @@ def serialise_to_json(obj):
 
 def deserialise_from_json(json_obj):
 
-    class_name = json_obj['__classname__']
-
-    if class_name not in known_classses.keys():
+    try:
+        cls_name = json_obj['__classname__']
+    except KeyError as key_err:
+        stderr.write("Error: '__classname__' key not available - "
+                     "cannot determine the object type!\n{}".format(key_err))
         return json_obj
 
-    cls = known_classses[class_name]
-    obj = cls.__new__(cls)
+    if cls_name not in known_classses.keys():
+        return json_obj
 
+    cls = known_classses[cls_name]
+    obj = cls.__new__(cls)
     for key, val in json_obj.items():
         setattr(obj, key, val)
 
     return obj
-
-
-# To add to the Flight class:
-#     @staticmethod
-#     def format_departure(departure):
-#         if isinstance(departure, str):
-#             return departure
-#         try:
-#             return datetime.strftime(departure, Flight.departure_format)
-#         except ValueError as val_err:
-#             print(val_err)
-#             return "unknown"
-
 
 
 if __name__ == '__main__':

@@ -8,9 +8,10 @@
 
 
 import json
+from sys import stderr
 from lab6.lab6_passengers import Passenger, BusinessPassenger, EconomyPassenger
 
-known_classses = {
+known_classes = {
     'Passenger': Passenger,
     'BusinessPassenger': BusinessPassenger,
     'EconomyPassenger': EconomyPassenger
@@ -20,24 +21,30 @@ def serialise_to_json(obj):
 
     obj_type = type(obj).__name__
 
-    if isinstance(obj, tuple(known_classses.values())):
+    if isinstance(obj, tuple(known_classes.values())):
         d = {"__classname__": obj_type}
         d.update(vars(obj))
         return d
     else:
         raise TypeError("Error! Received object of type " + obj_type +
                         "; can only serialise objects of the following types:\n" +
-                        ", ".join(known_classses.keys()))
+                        ", ".join(known_classes.keys()))
 
 
 def deserialize_from_json(json_obj):
 
-    class_name = json_obj['__classname__']
-
-    if class_name not in known_classses.keys():
+    try:
+        class_name = json_obj['__classname__']
+    except KeyError as key_err:
+        stderr.write("Error: __classname__ key is not available - cannot determine the type of object")
+        stderr.write(str(key_err))
         return json_obj
 
-    cls = known_classses[class_name]
+    if class_name not in known_classes.keys():
+        stderr.write("Object of unknown class '{}'; cannot be processed".format(class_name))
+        return json_obj
+
+    cls = known_classes[class_name]
     obj = cls.__new__(cls)
     for key, val in json_obj.items():
         setattr(obj, key, val)
@@ -48,10 +55,15 @@ class PassengerEncoder(json.JSONEncoder):
 
     def default(self, o):
 
-        if not isinstance(o, tuple(known_classses.values())):
+        o_type = type(o).__name__
+
+        if not isinstance(o, tuple(known_classes.values())):
+            known_types = ", ".join(known_classes.keys())
+            stderr.write('Cannot serialise objects of type {0}, '
+                         'only objects of the following types: {1}'.format(o_type, known_types))
             return super().default(self, o)
 
-        d = {"__classname__": o.__class__.__name__}
+        d = {"__classname__": o_type}
         d.update(vars(o))
         return d
 
