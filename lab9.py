@@ -16,83 +16,82 @@
 import requests
 from bs4 import BeautifulSoup
 from contextlib import closing
+from sys import stderr
+
 
 def get_content_from_url(url):
     '''
     Returns the content of the web page with the given URL
     '''
 
-    def response_ok(r):
-        '''
-        Checks the status code of the response and
-        also if the response contains html content
-        '''
-        content_type = r.headers['Content-Type']
-        return (r.status_code == 200) and \
-               (content_type is not None) and \
-               (content_type.find('html') >= 0)
+    def response_ok(response):
+        resp_content_type = response.headers['Content-Type']
+        return (response.status_code == 200) and \
+               (resp_content_type is not None) and \
+               (resp_content_type.find('html') >= 0)
 
     try:
         with closing(requests.get(url)) as resp:
             return resp.text if response_ok(resp) else None
-    except requests.RequestException as req_err:
-        print('The following error occured when requesting content from {}:\n{}'.format(url, req_err))
+    except requests.RequestException as exc:
+        stderr.write("Error when trying to pull content from {}:\n{}".format(url, exc))
         return None
 
 
-def get_mathematicians_names():
+
+def get_mathematicians_names(url):
     '''
     Retrieves the web page with a list of well known mathematicians
     and returns a list of the mathematicians' names
     '''
 
-    url = 'https://fabpedigree.com/james/greatmm.htm'
-    raw_txt = get_content_from_url(url)
+    names = []
+    page_content = get_content_from_url(url)
 
-    if raw_txt is not None:
-        soup = BeautifulSoup(raw_txt, 'html.parser')
+    if page_content:
+        page_soup = BeautifulSoup(page_content, 'html.parser')
+        ol_tags = page_soup.find_all('ol')
+        for ol_item in ol_tags:
+            a_tags = ol_item.find_all('a')
+            a_text = [a_tag.text.strip() for a_tag in a_tags]
+            names.extend(a_text)
 
-        all_names = []
-        ol_tags = soup.find_all('ol')
-        for ol in ol_tags:
-            a_tags = ol.find_all('a')
-            names = [tag.text.strip() for tag in a_tags]
-            all_names.extend(names)
+    else:
+        stderr.write("Failed to retrieve a list of mathematicians from {}".format(url))
 
-        return sorted(all_names)
+    return names
 
-    # if we failed to get any data from the url
-    print("Failed to collect mathematicians' names from {}".format(url))
-    return list()
 
 
 def get_pageview_counts(name):
     '''
-    Receives the name of a mathematician (in general, of any person).
+    Receives the name of a mathematician (or, in general, of any person).
     Returns the number of hits (page views) that the
     mathematician's Wikipedia page received in the last 60 days,
     as an int value.
     '''
 
-    url_template = 'https://xtools.wmflabs.org/articleinfo/en.wikipedia.org/{}'
-    page_content = get_content_from_url(url_template.format(name))
+    def last_60_days_tag(tag):
+        return (tag.name == 'a') and tag.has_attr('href') and (tag['href'].find('latest-60') > 0)
 
-    def a_with_latest60(tag):
-        return (tag.name == 'a') and tag.has_attr('href') and (tag['href'].find('latest-60') >= 0)
+    url = "https://xtools.wmflabs.org/articleinfo/en.wikipedia.org/{}".format(name)
+    stats_page = get_content_from_url(url)
 
-    if page_content:
-        soup = BeautifulSoup(page_content, 'html.parser')
-        a_tag = soup.find(a_with_latest60)
-        if a_tag:
-            pageviews = a_tag.text.strip().replace(',', '')
+    if stats_page:
+        page_soup = BeautifulSoup(stats_page, 'html.parser')
+        last_60_days_views = page_soup.find(last_60_days_tag)
+        if last_60_days_views:
+            views_count = last_60_days_views.text.strip().replace(",","")
             try:
-                return int(pageviews)
+                return int(views_count)
             except ValueError as val_err:
-                print('Error occured when transforming the page views count ({}) into int:\n{}'.format(pageviews, val_err))
+                stderr("Error occurred when trying to parse page views ({}) "
+                       "into an int:\n{}".format(views_count, val_err))
                 return None
 
-    print('Not able to get page views for mathematician {}'.format(name))
+    stderr.write("Could not retrieve stats for mathematician {}\n".format(name))
     return None
+
 
 
 def clean_names(names):
@@ -103,15 +102,11 @@ def clean_names(names):
     view stats. The names are 'cleaned' so that they consists of only
     name and surname.
     """
-    cleaned_names = []
 
+    cleaned_names = []
     for name in names:
-        name_parts = name.split()
-        if len(name_parts) > 1:
-            name_parts = [np.strip() for np in name_parts if np.strip().find('.') < 0]
-            cleaned_names.append(" ".join(name_parts))
-        else:
-            cleaned_names.append(name)
+        name_parts = [n_part for n_part in name.split() if '.' not in n_part]
+        cleaned_names.append(" ".join(name_parts))
 
     return cleaned_names
 
@@ -131,43 +126,40 @@ def find_most_popular_mathematicians():
     '''
 
     print('Putting together a list of names...')
-    names = get_mathematicians_names()
-    print('... done.')
+    mathematicians_url = 'http://www.fabpedigree.com/james/greatmm.htm'
+    mathematicians_names = get_mathematicians_names(mathematicians_url)
+    print('...done')
 
-    print('Getting page views for each name...\n')
-
-    results = []
-    not_found = []
-
-    for name in names:
-        pageviews = get_pageview_counts(name)
-        if pageviews is not None:
-            results.append((name, pageviews))
+    print('Collecting page views stats for each mathematician from the list...')
+    names_views_list = []
+    no_results = []
+    for name in mathematicians_names:
+        page_views = get_pageview_counts(name)
+        if page_views:
+            names_views_list.append((name, page_views))
         else:
-            not_found.append(name)
+            no_results.append(name)
 
-
-    cleaned_names = clean_names(not_found)
+    cleaned_names = clean_names(no_results)
+    no_results = []
     for name in cleaned_names:
-        pageviews = get_pageview_counts(name)
-        if pageviews is None:
-            pageviews = -1
-        results.append((name, pageviews))
+        page_views = get_pageview_counts(name)
+        if page_views:
+            names_views_list.append((name, page_views))
+        else:
+            no_results.append(name)
+    print('...done')
 
+    names_views_list = sorted(names_views_list, key=lambda item: item[1], reverse=True)
+    top_10 = names_views_list[:10] if len(names_views_list) > 10 else names_views_list
 
-    print('...done.')
+    print("Top mathematicians based on the Wikipedia page views")
+    for num, mathematician in enumerate(top_10):
+        print("{}. {} with {} page views".format((num+1), *mathematician))
 
-    results = sorted(results, key=lambda result: result[1], reverse=True)
-
-    top_mathematicians = results[:10] if len(results) > 10 else results
-
-    print('\nThe most popular mathematicians based on the number of page views ("hits") in last 60 days:\n')
-    for index, mathematician, pageviews in enumerate(top_mathematicians):
-        print('{}. {} with {} hits'.format((index + 1), mathematician, pageviews))
-
-    no_results = [res for res in results if res[1] < 0]
-    print('\nNot able to find pageviews for the following {} mathematicans:'.format(len(no_results)))
-    print("\n".join([item[0] for item in no_results]))
+    print()
+    print("Could not find page view stats for the following {} mathematicians:".format(len(no_results)))
+    print(", ".join(no_results))
 
 
 
